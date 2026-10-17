@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   record:
@@ -28,6 +28,8 @@ jobs:
         run: docker compose up --build -d
       - name: Record graph-backed browser walkthrough
         run: node demo/record-demo.js
+      - name: Name recorded video
+        run: mv demo-video/*.webm demo-video/ReleaseRadar-demo.webm
       - name: Upload demo video and screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -35,6 +37,12 @@ jobs:
           name: release-radar-demo
           path: demo-video/
           if-no-files-found: warn
+      - name: Publish public demo release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view demo-v1 >/dev/null 2>&1 || gh release create demo-v1 --title 'ReleaseRadar demo' --notes 'Real browser walkthrough against FalkorDB: HOLD, dependency evidence, persistent memory, and READY.' --target "$GITHUB_SHA"
+          gh release upload demo-v1 demo-video/ReleaseRadar-demo.webm demo-video/*.png --clobber
       - name: Show container logs on failure
         if: failure()
         run: docker compose logs --no-color
