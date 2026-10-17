@@ -1,4 +1,5 @@
-> **Verified working demo (October 17, 2026):** [Download the browser video and six screenshots](https://github.com/vijay15-coder/graphshack/actions/runs/39030074254#artifacts). The automated browser walkthrough runs against FalkorDB and shows HOLD → READY, dependency paths, and persistent memory. [Live Docker integration check](https://github.com/vijay15-coder/graphshack/actions/runs/39030074253) also passed. The demo video plan below describes this completed walkthrough.
+> **Verified working demo (October 17, 2026):** [Public video and screenshots](https://github.com/vijay15-coder/graphshack/releases/tag/demo-v1). The browser walkthrough shows HOLD → READY, dependency paths, and persistent FalkorDB memory. The [Docker integration check](https://github.com/vijay15-coder/graphshack/actions/runs/39030074253) passed.
+
 
 # ReleaseRadar
 
