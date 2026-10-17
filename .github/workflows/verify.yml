@@ -1,0 +1,58 @@
+name: Verify ReleaseRadar
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and test decision logic
+        run: |
+          npm install
+          npm test
+      - name: Start FalkorDB and app
+        run: docker compose up --build -d
+      - name: Verify graph-backed release lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in {1..90}; do
+            if curl -fsS http://localhost:4173/api/overview > /tmp/overview.json; then
+              break
+            fi
+            sleep 2
+          done
+          jq -e '.services | length == 7' /tmp/overview.json
+          jq -e '[.incidents[] | select(.status == "open")] | length == 2' /tmp/overview.json
+
+          curl -fsS -X POST http://localhost:4173/api/investigate             -H 'Content-Type: application/json'             -d '{"releaseId":"REL-2026-10-18"}' > /tmp/hold.json
+          jq -e '.verdict == "HOLD" and (.blockers | length) == 2' /tmp/hold.json
+
+          curl -fsS -X POST http://localhost:4173/api/incidents/INC-1042/resolve
+          curl -fsS -X POST http://localhost:4173/api/incidents/INC-1048/resolve
+          curl -fsS -X POST http://localhost:4173/api/investigate             -H 'Content-Type: application/json'             -d '{"releaseId":"REL-2026-10-18"}' > /tmp/ready.json
+          jq -e '.verdict == "READY" and .previous.verdict == "HOLD"' /tmp/ready.json
+
+          run_id=$(jq -r '.id' /tmp/ready.json)
+          curl -fsS -X POST "http://localhost:4173/api/investigations/$run_id/actions/01"             -H 'Content-Type: application/json'             -d '{"status":"done"}' > /tmp/action.json
+          jq -e '.status == "done"' /tmp/action.json
+          curl -fsS "http://localhost:4173/api/investigations/$run_id" > /tmp/memory.json
+          jq -e '.actions[0].status == "done"' /tmp/memory.json
+
+          echo 'Graph-backed HOLD → READY lifecycle and persistent action verified.'
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop containers
+        if: always()
+        run: docker compose down
