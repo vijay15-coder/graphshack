@@ -1,3 +1,5 @@
+> **Verified working demo (October 17, 2026):** [Download the browser video and six screenshots](https://github.com/vijay15-coder/graphshack/actions/runs/39030074254#artifacts). The automated browser walkthrough runs against FalkorDB and shows HOLD → READY, dependency paths, and persistent memory. [Live Docker integration check](https://github.com/vijay15-coder/graphshack/actions/runs/39030074253) also passed. The demo video plan below describes this completed walkthrough.
+
 # ReleaseRadar
 
 **A FalkorDB-backed release investigation agent for Graph Hacks 2026.**
