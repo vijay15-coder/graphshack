@@ -1,46 +1,36 @@
-> **Verified working demo (October 17, 2026):** [Public video and screenshots](https://github.com/vijay15-coder/graphshack/releases/tag/demo-v1). The browser walkthrough shows HOLD → READY, dependency paths, and persistent FalkorDB memory. The [Docker integration check](https://github.com/vijay15-coder/graphshack/actions/runs/39030074253) passed.
-
-
 # ReleaseRadar
 
-**A FalkorDB-backed release investigation agent for Graph Hacks 2026.**
+A FalkorDB-backed release investigation agent for Graph Hacks 2026.
 
-ReleaseRadar answers “Can we ship Checkout v2?” by traversing the service dependency graph, finding open incidents on those paths, identifying owners, creating an action checklist, and storing a traceable decision. Resolve an incident and run the agent again to watch the verdict change. All product data is synthetic.
+**Track:** Agents That Act on Connected Data  
+**Source:** https://github.com/vijay15-coder/graphshack  
+**Demo video:** https://github.com/vijay15-coder/graphshack/releases/download/demo-v1/ReleaseRadar-demo.webm  
+**Screenshots:** https://github.com/vijay15-coder/graphshack/releases/tag/demo-v1
 
-**Track:** Agents That Act on Connected Data. The project also demonstrates persistent agent memory, but the intended submission track is the first track.
+ReleaseRadar answers “Can we ship Checkout v2?” It traverses service dependencies in FalkorDB, finds incidents several hops away, names their owners, creates an action checklist, and saves the evidence behind each decision. All demo data is synthetic.
 
 ## Run locally
 
-Requirements: Docker Desktop with Compose. No API key is required.
+Docker Desktop with Compose is required. No API key is needed.
 
-1. Clone this repository.
-2. Run `docker compose up --build` in the repository root.
-3. Open [ReleaseRadar](http://localhost:4173). The [FalkorDB Browser](http://localhost:3000) is also available.
-4. Click **Investigate release**. Mark a recommended action done to see its state persist. Resolve INC-1042 and INC-1048 from the incident list, then click **Investigate release** again.
-5. Open **Agent memory** to compare the stored HOLD and READY decisions.
+1. Clone the repository and run docker compose up --build in its root.
+2. Open http://localhost:4173. FalkorDB Browser is at http://localhost:3000.
+3. Click **Investigate release**. The open payment and fraud incidents produce **HOLD**.
+4. Open **Graph explorer** and **Agent memory** to inspect paths and the saved decision.
+5. Resolve INC-1042 and INC-1048 in the incident list. Investigate again to get **READY** while the earlier HOLD remains in memory.
+6. Mark an action done and refresh to confirm its status persists.
 
-The app waits for FalkorDB and seeds the fictional graph on startup. Seeding uses `MERGE` and `ON CREATE SET`, so restarting does not reset incident status or erase investigations. The graph and agent memory persist in the Docker volume. To start a fresh demo, stop the stack and remove its volume with `docker compose down -v` (this deletes local demo graph data).
+The app waits for FalkorDB and seeds the fictional graph on startup. Seeding uses MERGE and ON CREATE SET, so restarts preserve incident status and investigations in the Docker volume. For a clean demo, run docker compose down -v to delete the local demo graph, then start the stack again. For development, start FalkorDB with docker compose up falkordb, then run npm install and npm run dev with Node.js 20+. Run npm test for decision tests.
 
-For development without containerizing the app, run `docker compose up falkordb`, then `npm install` and `npm run dev`. Copy `.env.example` values into your shell if needed. Node.js 20+ is required. Run `npm test` for the decision tests.
+Without FalkorDB, the app cannot load the release, investigate, recall history, or display graph context. There is no fallback data store or decision path.
 
-If FalkorDB is unavailable, the app cannot load the release, investigate, recall history, or display the graph. There is no ordinary database or fallback decision path.
+## Agent behavior
 
-## What the agent does
-
-The agent runs a focused tool sequence:
-
-1. `getRelease` finds the changed service.
-2. `getImpactPaths` traverses `DEPENDS_ON` relationships up to four hops.
-3. `getOpenIncidentPaths` finds open incidents and owners on those paths.
-4. `getLatestInvestigation` recalls its previous verdict; `getServiceOwner` identifies the rollout owner.
-5. It applies a transparent policy: any high severity incident means **HOLD**; only medium or low incidents mean **REVIEW**; none means **READY**.
-6. `saveInvestigation` creates an `Investigation` node with `Finding` and `Action` nodes. Each finding links to the source `Incident`.
-
-The agent is deterministic. This keeps decisions reproducible and reviewable; there is no LLM API or generated rationale in the decision path. The “action” is creation of a concrete owner checklist inside the graph. Checklist items can be marked done in the UI; their status is written back to FalkorDB and survives refreshes. The agent does not trigger an actual production deployment.
+The deterministic agent calls getRelease, getImpactPaths, getOpenIncidentPaths, getLatestInvestigation, and getServiceOwner. Any high-severity open incident yields **HOLD**; medium or low incidents yield **REVIEW**; no reachable open incident yields **READY**. It writes an Investigation with Finding and Action nodes. Each finding is linked to its source Incident, and each action has an owner and editable status. The agent does not deploy production software; its concrete action is a persisted owner checklist.
 
 ## Graph data model
 
-```mermaid
+~~~mermaid
 flowchart LR
   R[Release] -->|CHANGES| S[Service]
   S -->|DEPENDS_ON| D[Service]
@@ -50,85 +40,47 @@ flowchart LR
   V -->|FOUND| F[Finding]
   F -->|EVIDENCED_BY| I
   V -->|RECOMMENDS| A[Action]
-```
+~~~
 
-Node labels and key properties:
+Release has id, name, and version. Service has id, name, and tier. Person has id and name. Incident has id, severity, and status. Investigation has id, verdict, blockerCount, and createdAt. Finding stores its evidence path and severity. Action stores text, owner, and status.
 
-| Label | Key properties | Purpose |
-| --- | --- | --- |
-| `Release` | `id`, `name`, `version` | Candidate being assessed |
-| `Service` | `id`, `name`, `tier` | Deployed components |
-| `Person` | `id`, `name`, `role` | Responsible owner |
-| `Incident` | `id`, `severity`, `status` | Live release risk |
-| `Investigation` | `id`, `verdict`, `createdAt` | Persistent decision snapshot |
-| `Finding` | `id`, `path`, `severity` | Evidence recorded at decision time |
-| `Action` | `id`, `text`, `owner`, `status` | Agent-created checklist item |
+The sample topology connects Checkout Web → Checkout API → Payments API → Fraud Engine and Ledger DB, plus Feature Flags and Notification Worker. The open Payments API and Fraud Engine incidents initially block release. The dependency edges determine the verdict.
 
-The synthetic topology has Checkout Web → Checkout API → Payments API → Fraud Engine and Ledger DB, alongside Feature Flags and Notification Worker. Initially, open incidents on Payments API and Fraud Engine force a HOLD. Their owners and exact graph paths are displayed in the interface.
+## Cypher that drives the decision
 
-## Essential Cypher
+The runnable queries and parameters are in [src/graph.js](src/graph.js). These patterns are central to the agent:
 
-The runnable queries and parameters live in [`src/graph.js`](src/graph.js). These are the queries that make the release decision possible:
-
-Find all dependency paths from the changed service:
-
-```cypher
+~~~cypher
 MATCH p=(root:Service {id: $serviceId})-[:DEPENDS_ON*1..4]->(dependency:Service)
 RETURN dependency.id AS id, dependency.name AS name,
        dependency.tier AS tier, p AS path
 ORDER BY dependency.name
-```
+~~~
 
-Find open incidents and owners along those paths:
-
-```cypher
+~~~cypher
 MATCH p=(root:Service {id: $serviceId})-[:DEPENDS_ON*0..4]->(affected:Service)
 MATCH (i:Incident)-[:AFFECTS]->(affected)
 WHERE i.status = 'open'
 OPTIONAL MATCH (owner:Person)-[:OWNS]->(affected)
 RETURN i.id AS id, i.title AS title, i.severity AS severity,
        affected.name AS serviceName, owner.name AS ownerName, p AS path
-```
+~~~
 
-Recall the last investigation:
-
-```cypher
+~~~cypher
 MATCH (v:Investigation)-[:FOR_RELEASE]->(r:Release {id: $releaseId})
 RETURN v.id AS id, v.verdict AS verdict,
        v.blockerCount AS blockerCount, v.createdAt AS createdAt
 ORDER BY v.createdAt DESC LIMIT 1
-```
+~~~
 
-Findings are linked to incidents through `EVIDENCED_BY`; the historical path is also saved as text so a later incident resolution does not rewrite the evidence that drove the earlier decision. The current verdict is always recomputed from live incident status.
+Historical findings retain their evidence path after an incident is resolved. Every new verdict is recomputed from the current incident graph.
 
-## Architecture
+## Architecture and verification
 
-```
-Browser UI → Node HTTP API → release agent → FalkorDB queries
-                               ↘ stored investigation, findings, actions
-```
+Browser UI → Node HTTP API → release agent → FalkorDB queries and stored investigations. The UI is static HTML/CSS/JavaScript; the server uses Node's HTTP module and the official FalkorDB client. The graph name is release_radar.
 
-The browser uses a static HTML/CSS/JavaScript interface. The server uses Node's built-in HTTP module and the official `falkordb` Node client. It connects to one graph named `release_radar`. No user data is loaded. For a public deployment, place this local demo behind access control before exposing the incident mutation endpoints.
+The [integration workflow](https://github.com/vijay15-coder/graphshack/actions/workflows/verify.yml) builds both containers, checks 7 services and 2 open incidents, verifies HOLD → READY after incident resolution, and confirms action status persists. The [browser demo workflow](https://github.com/vijay15-coder/graphshack/actions/workflows/demo.yml) records the actual UI against FalkorDB and publishes the video and six screenshots. Both workflows passed on October 17, 2026.
 
-## Demo video plan
+## Data and AI assistance
 
-A submission still needs a recorded demo video and a public repository URL. A 90-second recording can follow this sequence:
-
-1. Show the graph explorer and trace Checkout Web → Checkout API → Payments API.
-2. Run the agent. Show the HOLD verdict, INC-1042 and INC-1048 evidence paths, owner checklist, and tool trace.
-3. Show the saved investigation in Agent memory.
-4. Resolve both incidents; run the agent again.
-5. Show READY, then open Agent memory to compare both stored snapshots.
-6. Briefly open FalkorDB Browser and run one essential Cypher query above.
-
-## Hackathon disclosure and data
-
-This project was developed with AI coding assistance (OpenAI Codex). Team members should review, run, and explain the code and graph queries before submission. The dataset in `src/data.js` is wholly fictional and created for this demo. It contains no private, login-protected, personal, or paywalled records.
-
-The product implementation was created for the October 15–18, 2026 Graph Hacks window. Team members should add the final repository link, demo video URL, and their own verified contribution notes to the submission.
-
-## Official references
-
-- [FalkorDB Node client](https://github.com/FalkorDB/falkordb-ts)
-- [FalkorDB Docker guide](https://falkordb.github.io/docs-staging/operations/docker/)
-- [FalkorDB Cypher documentation](https://docs.falkordb.com/cypher/)
+The dataset in [src/data.js](src/data.js) is wholly fictional; it contains no private, login-protected, paywalled, or personal records. OpenAI Codex assisted with code and documentation. Team members must review, verify, and be able to explain the implementation, graph model, Cypher, and technical decisions before submitting. Team members should state their own verified contributions in the hackathon submission.
