@@ -4,7 +4,9 @@
 
 **Repository:** https://github.com/vijay15-coder/graphshack
 
-**Demo video and screenshots:** https://github.com/vijay15-coder/graphshack/actions/runs/39030074254#artifacts
+**Demo video:** https://github.com/vijay15-coder/graphshack/releases/download/demo-v1/ReleaseRadar-demo.webm
+
+**Screenshots and release:** https://github.com/vijay15-coder/graphshack/releases/tag/demo-v1
 
 **Verified integration run:** https://github.com/vijay15-coder/graphshack/actions/runs/39030074253
 
@@ -18,7 +20,7 @@
 
 **Why FalkorDB is essential:** Without FalkorDB the agent loses the release, topology, incident evidence, owners, and persistent decision history. Its verdict is calculated from graph queries; the interface renders those results.
 
-**Demo flow:** Investigate Checkout v2 → HOLD with payment and fraud evidence paths → inspect graph and stored memory → resolve both incidents → investigate again → READY with earlier HOLD preserved. The linked artifact contains a real browser video and six screenshots from a passing run against Dockerized FalkorDB.
+**Demo flow:** Investigate Checkout v2 → HOLD with payment and fraud evidence paths → inspect graph and stored memory → resolve both incidents → investigate again → READY with earlier HOLD preserved. The public release contains a real browser video and six screenshots from a passing run against Dockerized FalkorDB.
 
 **Technology:** Node.js 22, official falkordb client, FalkorDB, Cypher, static HTML/CSS/JavaScript, Docker Compose, Playwright for demo recording.
 
