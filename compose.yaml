@@ -1,0 +1,23 @@
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    ports:
+      - "6379:6379"
+      - "3000:3000"
+    environment:
+      REDIS_ARGS: "--appendonly yes"
+    volumes:
+      - falkordb_data:/data
+  app:
+    build: .
+    ports:
+      - "4173:4173"
+    environment:
+      PORT: "4173"
+      FALKORDB_HOST: falkordb
+      FALKORDB_PORT: "6379"
+      FALKORDB_GRAPH: release_radar
+    depends_on:
+      - falkordb
+volumes:
+  falkordb_data:

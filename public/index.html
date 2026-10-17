@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1321">
+  <title>ReleaseRadar — decisions with a path back to the graph</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">◎</div><div><strong>ReleaseRadar</strong><span>Graph-powered release agent</span></div></div>
+      <div class="side-label">WORKSPACE</div>
+      <nav class="nav">
+        <button class="nav-item active" data-tab="overview"><span>◈</span> Command center</button>
+        <button class="nav-item" data-tab="memory"><span>◷</span> Agent memory</button>
+        <button class="nav-item" data-tab="graph"><span>⌘</span> Graph explorer</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="connection"><span class="status-dot"></span><div><strong>FalkorDB connected</strong><small>release_radar graph</small></div></div>
+        <div class="hackathon">BUILT FOR <strong>GRAPH HACKS 2026</strong><span>Agents That Act on Connected Data</span></div>
+      </div>
+    </aside>
+    <main>
+      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <b id="breadcrumb-page">Command center</b></div><div class="top-actions"><span class="live-pill"><span></span> LIVE DEMO</span><span class="avatar">IN</span></div></header>
+      <section class="page active" id="page-overview">
+        <div class="hero">
+          <div class="hero-copy"><div class="eyebrow">RELEASE INTELLIGENCE <span class="eyebrow-line"></span> OCTOBER 2026</div><h1>Ship with the <em>whole picture.</em></h1><p>Ask an agent to inspect a release. It follows dependency paths in FalkorDB, finds active risks, and shows exactly why it made its call.</p><button class="primary" id="investigate-btn">✦ &nbsp; Investigate release <span>↗</span></button></div>
+          <div class="hero-orbit"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-center">◎</div><div class="orbit-node n1">API</div><div class="orbit-node n2">DB</div><div class="orbit-node n3">AI</div><div class="orbit-node n4">WEB</div></div>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="main-grid">
+          <section class="card release-card"><div class="card-top"><div><div class="section-kicker">CURRENT RELEASE</div><h2 id="release-name">Loading...</h2></div><span class="version" id="release-version"></span></div><p id="release-summary"></p><div class="release-meta"><span>◈ &nbsp; Checkout platform</span><span>↗ &nbsp; Production candidate</span></div><div class="divider"></div><div class="card-bottom"><span id="release-dependency-count"></span><button class="text-button" data-tab-link="graph">Explore dependencies →</button></div></section>
+          <section class="card status-card"><div class="card-top"><div><div class="section-kicker">LATEST ASSESSMENT</div><h2>Agent verdict</h2></div><span class="mini-icon">✦</span></div><div id="verdict-panel" class="empty-verdict"><span class="verdict-icon">?</span><div><strong>No investigation yet</strong><p>Run the agent to inspect this release against live graph context.</p></div></div><div class="card-bottom"><span id="last-run">Waiting for first run</span><button class="text-button" id="view-memory">View memory →</button></div></section>
+        </div>
+        <div class="detail-grid">
+          <section class="card"><div class="card-top"><div><div class="section-kicker">CONNECTED CONTEXT</div><h2>Incident watch</h2></div><span class="count-pill" id="incident-count">0 open</span></div><div id="incident-list" class="incident-list"></div></section>
+          <section class="card"><div class="card-top"><div><div class="section-kicker">AGENT OUTPUT</div><h2>Evidence & actions</h2></div><span class="mini-icon">↗</span></div><div id="agent-output" class="agent-output"><div class="placeholder"><span>✧</span><strong>Ready when you are</strong><p>The agent will show dependency paths, owners, and its action checklist here.</p></div></div></section>
+        </div>
+      </section>
+      <section class="page" id="page-memory"><div class="page-heading"><div class="section-kicker">PERSISTENT GRAPH MEMORY</div><h1>Every decision has a history.</h1><p>Investigations stay in FalkorDB between sessions. Re-run after resolving an incident to see how the verdict changes.</p></div><div class="memory-grid"><div class="card"><div class="card-top"><div><div class="section-kicker">INVESTIGATIONS</div><h2>Decision timeline</h2></div><span class="mini-icon">◷</span></div><div id="history-list" class="history-list"></div></div><div class="card"><div class="card-top"><div><div class="section-kicker">SELECTED MEMORY</div><h2>Stored evidence</h2></div></div><div id="memory-detail" class="memory-detail"><div class="placeholder"><span>◷</span><strong>Select an investigation</strong><p>Findings and recommended actions are stored as connected nodes.</p></div></div></div></div></section>
+      <section class="page" id="page-graph"><div class="page-heading"><div class="section-kicker">FALKORDB CONTEXT LAYER</div><h1>See how it connects.</h1><p>Every line is a stored dependency. The release agent traverses these edges to find risks beyond the changed service.</p></div><div class="graph-layout"><div class="card graph-card"><div class="card-top"><div><div class="section-kicker">SERVICE TOPOLOGY</div><h2>Checkout dependency graph</h2></div><span class="graph-legend"><i></i> service <i class="warn"></i> active incident</span></div><div id="graph-canvas" class="graph-canvas"></div></div><div class="card graph-side"><div class="card-top"><div><div class="section-kicker">GRAPH DETAILS</div><h2 id="selected-service-name">Select a service</h2></div></div><div id="selected-service-detail"><p>Choose a node to inspect its owner, incidents, and direct dependencies.</p></div><div class="graph-note"><strong>Why the graph matters</strong><p>Without the DEPENDS_ON edges, the agent cannot discover payment and fraud incidents from the Checkout Web release.</p></div></div></div></section>
+      <footer>ReleaseRadar · Synthetic demo data · Powered by FalkorDB · Graph Hacks 2026</footer>
+    </main>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
