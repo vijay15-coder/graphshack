@@ -1,27 +1,29 @@
-# Graph Hacks submission draft
-
-**Project:** ReleaseRadar
+# Graph Hacks submission — ReleaseRadar
 
 **Track:** Agents That Act on Connected Data
 
+**Repository:** https://github.com/vijay15-coder/graphshack
+
+**Demo video and screenshots:** https://github.com/vijay15-coder/graphshack/actions/runs/39030074254#artifacts
+
+**Verified integration run:** https://github.com/vijay15-coder/graphshack/actions/runs/39030074253
+
+**Local setup:** Follow the Docker Compose instructions in README.md. No hosted deployment is required for this submission because the repository provides complete local setup.
+
 **One sentence:** ReleaseRadar is a FalkorDB-powered release agent that follows service dependencies to detect deployment blockers, assigns owners, and saves explainable decisions across sessions.
 
-**Problem:** Release decisions depend on connected facts scattered across services, incidents, and ownership. A change to a customer-facing service can be unsafe because of an incident several hops away. Flat records obscure that link, and agents often forget why an earlier decision was made.
+**Problem:** A release can be unsafe because of an incident several service hops away. Flat records obscure the dependency, and agents lose the reasoning behind earlier decisions.
 
-**Solution:** The agent starts from the service changed by a release, traverses `DEPENDS_ON` edges in FalkorDB, finds open incidents on reachable services, links each to an owner, and creates an action checklist. Every verdict is stored as an Investigation connected to the Release, Findings, Incidents, and Actions. A new run recalls the previous verdict and recomputes against live graph state.
+**Solution:** The agent starts at the service changed by a release, traverses DEPENDS_ON edges in FalkorDB, finds open incidents on reachable services, identifies owners, and writes a concrete action checklist. Each verdict is stored as an Investigation connected to the Release, Findings, Incidents, and Actions. A later run recalls the earlier verdict and recomputes against current graph state.
 
-**Graph is essential:** Remove FalkorDB and the agent loses its release, service topology, incident evidence, owner mapping, and persistent decision history. The graph directly determines the verdict; the interface only renders results from graph queries.
+**Why FalkorDB is essential:** Without FalkorDB the agent loses the release, topology, incident evidence, owners, and persistent decision history. Its verdict is calculated from graph queries; the interface renders those results.
 
-**Demo flow:** Investigate Checkout v2 → show HOLD caused by payment and fraud incident paths → view persisted memory → resolve both incidents → investigate again → show READY and earlier HOLD snapshot.
+**Demo flow:** Investigate Checkout v2 → HOLD with payment and fraud evidence paths → inspect graph and stored memory → resolve both incidents → investigate again → READY with earlier HOLD preserved. The linked artifact contains a real browser video and six screenshots from a passing run against Dockerized FalkorDB.
 
-**Technology:** Node.js 20+, official `falkordb` client, FalkorDB, Cypher, static HTML/CSS/JavaScript, Docker Compose.
+**Technology:** Node.js 22, official falkordb client, FalkorDB, Cypher, static HTML/CSS/JavaScript, Docker Compose, Playwright for demo recording.
 
-**Data:** Synthetic, fictional company topology and incidents.
+**Data:** Entirely synthetic company topology and incidents.
 
-**AI assistance disclosure:** OpenAI Codex assisted in writing the code and documentation. Team members must run, verify, and understand the implementation before submission.
+**AI assistance disclosure:** OpenAI Codex assisted with code and documentation. The team should review, run, and be able to explain the graph model, queries, agent logic, and technical decisions before submission.
 
-**Add after verification:**
-- Public source repository URL: https://github.com/vijay15-coder/graphshack (upload pending)
-- Demo video URL:
-- Team member contributions:
-- Live deployment URL, if any:
+**Team contributions:** Vijay kumar Angajala and Swapna Beldhari should add their own verified contributions in the hackathon submission form.
