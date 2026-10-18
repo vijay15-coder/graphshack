@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateEvidence } from '../src/agent.js';
+import { evaluateEvidence } from '../src/decision.js';
 
 const release = { id: 'REL-1', name: 'Checkout v2', serviceId: 'checkout-web' };
 const impact = [{ id: 'payments-api', path: ['Checkout Web', 'Checkout API', 'Payments API'] }];

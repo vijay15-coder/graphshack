@@ -75,9 +75,13 @@ ORDER BY v.createdAt DESC LIMIT 1
 
 Historical findings retain their evidence path after an incident is resolved. Every new verdict is recomputed from the current incident graph.
 
+### Graph ablation check
+
+The integration workflow also runs `scripts/graph-ablation.js` against its disposable synthetic graph. It reopens the two incidents, records a **HOLD**, removes the Checkout API to Payments API dependency edge, and gets **READY**. Restoring the edge returns **HOLD**. It then reloads the intervening READY investigation from FalkorDB to verify that decision history persists. This directly checks that graph topology changes the agent's output.
+
 ## Architecture and verification
 
-Browser UI → Node HTTP API → release agent → FalkorDB queries and stored investigations. The UI is static HTML/CSS/JavaScript; the server uses Node's HTTP module and the official FalkorDB client. The graph name is release_radar.
+Browser UI → Node HTTP API → release agent → FalkorDB queries and stored investigations. The UI is static HTML/CSS/JavaScript; the server uses Node's HTTP module and the official FalkorDB client. The graph name is release_radar. The verdict policy lives in `src/decision.js`, so `node --test` can check it without a running database; the integration workflow verifies the full FalkorDB path.
 
 The [integration workflow](https://github.com/vijay15-coder/graphshack/actions/workflows/verify.yml) builds both containers, checks 7 services and 2 open incidents, verifies HOLD → READY after incident resolution, and confirms action status persists. The [browser demo workflow](https://github.com/vijay15-coder/graphshack/actions/workflows/demo.yml) records the actual UI against FalkorDB and publishes the video and six screenshots. Both workflows passed on October 17, 2026.
 

@@ -20,6 +20,8 @@
 
 **Why FalkorDB is essential:** Without FalkorDB the agent loses the release, topology, incident evidence, owners, and persistent decision history. Its verdict is calculated from graph queries; the interface renders those results.
 
+**Direct graph-dependence check:** The repository's integration workflow runs `scripts/graph-ablation.js` on a disposable graph. With both incidents open, the agent returns HOLD. Removing the Checkout API to Payments API dependency edge makes both incidents unreachable and changes the verdict to READY. Restoring the edge returns HOLD. The intervening READY decision remains available as graph memory.
+
 **Demo flow:** Investigate Checkout v2 → HOLD with payment and fraud evidence paths → inspect graph and stored memory → resolve both incidents → investigate again → READY with earlier HOLD preserved. The public release contains a real browser video and six screenshots from a passing run against Dockerized FalkorDB.
 
 **Technology:** Node.js 22, official falkordb client, FalkorDB, Cypher, static HTML/CSS/JavaScript, Docker Compose, Playwright for demo recording.
