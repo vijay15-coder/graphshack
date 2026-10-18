@@ -30,4 +30,11 @@
 
 **AI assistance disclosure:** OpenAI Codex assisted with code and documentation. The team should review, run, and be able to explain the graph model, queries, agent logic, and technical decisions before submission.
 
-**Team contributions:** Vijay kumar Angajala and Swapna Beldhari should add their own verified contributions in the hackathon submission form.
+## Team work split (assignments, not completed-contribution claims)
+
+| Person | Owns before submission | Evidence to check |
+|---|---|---|
+| Vijay kumar Angajala | Backend agent, FalkorDB model and Cypher, dependency-edge ablation, Docker integration run, final repository push | Explain the HOLD/READY queries and saved Investigation graph; run the integration workflow and check its result |
+| Swapna Beldhari | Browser experience, demo walkthrough and video, README clarity, submission review | Replay the demo from a clean graph; confirm evidence paths, memory, action updates, video link, and setup instructions |
+
+Each person should record only the tasks they actually complete in the hackathon submission form. Both should be able to explain the graph's role and the AI-assistance disclosure.
